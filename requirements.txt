@@ -1,0 +1,7 @@
+selenium~=4.2.0
+pytest~=7.0.1
+allure-pytest>=2.8.33
+webdriver-manager>=3.5.4
+pytest-xdist>=2.5.0
+tabulate~=0.9.0
+pyautogui>=0.9.53

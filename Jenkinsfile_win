@@ -1,0 +1,61 @@
+def node= env.Execution_Server
+def browser= env.Browser
+def threads= env.Threads
+def run=env.Execution_Type
+def build=env.Build
+def deleterpclientbackup=env.Delete_RPClient_BackUPFiles
+def modulename=env.Module
+def installfreshclient=env.Install_Fresh_Client
+def executionpackage=env.Execution_Packages
+def specificpackage=env.Specific_Package
+def first_tenant=env.Tenant
+def second_tenant=env.Second_Tenant
+def environment=env.Environment
+def workspace=env.WORKSPACE
+def version=env.Version
+def local=env.Localization
+def buildStatus
+def emailSubject
+def emailBodyDetails
+def emailRecipients = 'sai.narasimha@quickheal.com, nallu.jyothsna@quickheal.com, jui.rumde@quickheal.com'
+pipeline {
+	agent {label node}
+        stages{
+
+ 		        stage('Execution'){
+			      steps{
+				   script{			
+						print '=================================================='
+						print '              Execution Stage Started.'
+						print '=================================================='
+						try{
+                             bat 'execution_win.bat' +" "+environment+" "+threads
+						}catch(Exception e) {
+						print e
+						currentBuild.result = "FAILURE"
+						throw e
+						}
+					}	
+			}	
+		 }
+	}
+		post {
+		always {
+			script {
+				print '========================================================='
+			    print '              Generating Report'
+			    print '========================================================='
+			    allure includeProperties: false, jdk: '', results: [[path: '**/build/allure-results']]
+				emailSubject = "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}"
+				emailBodyDetails = "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
+				emailext (
+					subject: emailSubject,
+					body: '${FILE,path="Report.html"}',
+					to: emailRecipients,
+					attachLog: true,
+					attachmentsPattern: 'src\\Report.html',
+				)
+			}
+		}
+	}
+}
